@@ -79,7 +79,7 @@ function showToast({ type = "info", title, message, duration = 4200 }) {
    ========================================================================== */
 function initTheme() {
   const saved = localStorage.getItem("kfupm_theme");
-  const theme = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const theme = saved || "light";
   document.documentElement.setAttribute("data-theme", theme);
 
   $("#theme-toggle")?.addEventListener("click", () => {
