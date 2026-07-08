@@ -1,0 +1,710 @@
+/* ==========================================================================
+   KFUPM Campus GIS Portal — Stylesheet
+   Official-style palette:
+     Primary  #006C68 (teal)
+     Dark     #23454A (deep slate teal)
+     Surface  #F7F8FA
+   Typography: Inter throughout.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand palette ---- */
+  --brand-dark:  #23454A;
+  --brand-900:   #1b3438;
+  --brand-700:   #1d5652;
+  --brand-600:   #00615d;
+  --brand-500:   #006c68;   /* primary */
+  --brand-400:   #16847f;
+  --brand-300:   #5fa6a2;
+  --brand-100:   #dcecea;
+  --brand-50:    #eef5f4;
+
+  --accent-600: #4f7d4a;   /* olive-green accent, echoes KFUPM link color */
+  --accent-500: #5f9457;
+  --accent-100: #e3efe0;
+
+  --gold-500: #a9822f;    /* sparing use — ceremonial gold */
+
+  /* ---- Neutrals ---- */
+  --ink-900: #1b2426;
+  --ink-800: #27333;
+  --ink-700: #3d4a4d;
+  --ink-500: #67757a;
+  --ink-300: #a9b4b6;
+  --ink-100: #e3e8ea;
+  --ink-50:  #f1f3f4;
+  --white:   #ffffff;
+
+  /* ---- Semantic ---- */
+  --success: #2e7d4f;
+  --warning: #b8791a;
+  --danger:  #c0392b;
+
+  /* ---- Surface tokens (light mode default) ---- */
+  --bg: #f7f8fa;
+  --surface: var(--white);
+  --surface-alt: #f2f4f5;
+  --border: #e2e6e8;
+  --text: var(--ink-900);
+  --text-muted: var(--ink-500);
+
+  /* ---- Layout ---- */
+  --topnav-h: 68px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(20, 30, 32, 0.05);
+  --shadow-md: 0 6px 18px rgba(20, 30, 32, 0.08);
+  --shadow-lg: 0 16px 36px rgba(20, 30, 32, 0.14);
+
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #10171a;
+  --surface: #182226;
+  --surface-alt: #1c2b2e;
+  --border: #263336;
+  --text: #eef2f2;
+  --text-muted: #9aabae;
+  --brand-50: #16292c;
+  --brand-100: #1d3438;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================= RESET ============================= */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+h1, h2, h3, h4 {
+  margin: 0; font-family: var(--font-display); font-weight: 700; color: var(--text);
+  letter-spacing: -0.01em;
+}
+p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+ul { margin: 0; padding: 0; list-style: none; }
+button { font: inherit; cursor: pointer; }
+input, select, textarea { font: inherit; }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--brand-400); outline-offset: 2px; }
+
+.icon { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
+.icon-xl { width: 40px; height: 40px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ============================= LOADING SCREEN ============================= */
+.loading-screen {
+  position: fixed; inset: 0; z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-dark);
+  transition: opacity 0.4s var(--ease), visibility 0.4s var(--ease);
+}
+.loading-screen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.loading-inner { text-align: center; }
+.loading-logo { width: 200px; margin: 0 auto 30px; filter: brightness(0) invert(1); }
+.loading-bar { width: 200px; height: 3px; border-radius: 4px; background: rgba(255,255,255,0.2); overflow: hidden; margin: 0 auto; }
+.loading-bar span {
+  display: block; height: 100%; width: 40%; border-radius: 4px;
+  background: #fff; animation: loadingSlide 1.1s ease-in-out infinite;
+}
+.loading-text { margin-top: 16px; color: rgba(255,255,255,0.75); font-size: 13px; letter-spacing: 0.02em; }
+@keyframes loadingSlide { 0% { transform: translateX(-120%);} 50% { transform: translateX(60%);} 100% { transform: translateX(280%);} }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+
+/* ============================= TOASTS ============================= */
+.toast-container {
+  position: fixed; top: 20px; right: 20px; z-index: 900;
+  display: flex; flex-direction: column; gap: 10px; width: min(340px, calc(100vw - 40px));
+}
+.toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--brand-500);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+  padding: 14px 14px;
+}
+.toast.toast-success { border-left-color: var(--success); }
+.toast.toast-error { border-left-color: var(--danger); }
+.toast.toast-out { opacity: 0; transition: opacity 0.25s var(--ease); }
+.toast .icon { color: var(--brand-500); margin-top: 1px; }
+.toast.toast-success .icon { color: var(--success); }
+.toast.toast-error .icon { color: var(--danger); }
+.toast-content { flex: 1; }
+.toast-title { font-weight: 600; font-size: 13.5px; }
+.toast-msg { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.toast-close { background: none; border: none; color: var(--text-muted); padding: 2px; }
+
+/* ============================= LOGIN VIEW ============================= */
+.view-login {
+  min-height: 100vh; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px; background: var(--brand-dark);
+}
+.login-backdrop { position: absolute; inset: 0; background: var(--brand-dark); }
+.login-backdrop-grid {
+  position: absolute; inset: 0; opacity: 0.06;
+  background-image: linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.login-card {
+  position: relative; width: 100%; max-width: 400px;
+  background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); padding: 40px 34px 30px;
+}
+.login-card-header { text-align: center; margin-bottom: 26px; }
+.login-logo { width: 140px; margin: 0 auto 20px; }
+.login-title { font-size: 21px; }
+.login-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+.role-toggle {
+  position: relative; display: flex; background: var(--surface-alt);
+  border-radius: var(--radius-sm); padding: 4px; margin-bottom: 22px;
+}
+.role-toggle-btn {
+  flex: 1; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; background: transparent; padding: 9px 10px; border-radius: 6px;
+  font-size: 13.5px; font-weight: 600; color: var(--text-muted);
+  transition: color 0.2s var(--ease);
+}
+.role-toggle-btn .icon { width: 16px; height: 16px; }
+.role-toggle-btn.active { color: var(--white); }
+.role-toggle-indicator {
+  position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px);
+  background: var(--brand-500); border-radius: 6px; transition: transform 0.25s var(--ease);
+}
+.role-toggle.admin-active .role-toggle-indicator { transform: translateX(100%); }
+
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
+.field input, .field select, .field textarea {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 13px; background: var(--surface); color: var(--text);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--brand-400); box-shadow: 0 0 0 3px var(--brand-100); outline: none;
+}
+.field-readonly { background: var(--surface-alt); color: var(--text-muted); }
+.password-wrap { position: relative; }
+.password-wrap input { width: 100%; padding-right: 42px; }
+.password-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); padding: 6px; border-radius: 6px; }
+.password-toggle:hover { background: var(--surface-alt); }
+
+.login-error {
+  font-size: 12.5px; color: var(--danger); background: #fdecea; border: 1px solid #f5c6c1;
+  border-radius: var(--radius-sm); padding: 9px 12px;
+}
+[data-theme="dark"] .login-error { background: #3a1f1c; border-color: #5a2a24; }
+
+.login-hint { margin-top: 4px; background: var(--surface-alt); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12px; }
+.login-hint strong { display: block; margin-bottom: 6px; color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+.login-hint-row { display: flex; justify-content: space-between; padding: 2px 0; color: var(--text-muted); }
+.login-hint-row code { background: var(--surface); padding: 1px 6px; border-radius: 4px; font-size: 11.5px; }
+
+.login-footnote { position: relative; margin-top: 26px; color: rgba(255,255,255,0.55); font-size: 12px; text-align: center; }
+
+/* ============================= BUTTONS ============================= */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid transparent; border-radius: var(--radius-sm); padding: 11px 22px;
+  font-weight: 600; font-size: 14px; cursor: pointer;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.btn .icon { width: 17px; height: 17px; }
+.btn-primary { background: var(--brand-500); color: #fff; }
+.btn-primary:hover { background: var(--brand-600); }
+.btn-outline { background: transparent; border-color: var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--brand-500); color: var(--brand-500); }
+.btn-ghost { background: var(--surface-alt); color: var(--text); }
+.btn-ghost:hover { background: var(--brand-100); color: var(--brand-600); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: var(--radius-sm);
+  border: none; background: transparent; color: var(--text-muted);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.icon-btn:hover { background: var(--surface-alt); color: var(--text); }
+
+/* ============================= APP SHELL / TOPNAV ============================= */
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.app-shell[hidden] {
+  display: none !important;
+}
+.topnav {
+  position: sticky; top: 0; z-index: 200; height: var(--topnav-h);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.topnav-inner {
+  height: 100%; max-width: 1440px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.topnav-brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.topnav-logo { height: 24px; width: auto; }
+[data-theme="dark"] .topnav-logo { filter: brightness(0) invert(1); }
+.topnav-divider { width: 1px; height: 22px; background: var(--border); }
+.topnav-title { font-weight: 600; font-size: 15px; white-space: nowrap; color: var(--brand-dark); }
+[data-theme="dark"] .topnav-title { color: var(--text); }
+.nav-toggle { display: none; }
+
+.topnav-links { display: flex; align-items: center; gap: 2px; }
+.topnav-link {
+  padding: 9px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  color: var(--text-muted); transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.topnav-link:hover { color: var(--brand-600); }
+.topnav-link.active { background: var(--brand-50); color: var(--brand-600); font-weight: 600; }
+[data-theme="dark"] .topnav-link.active { background: var(--brand-100); color: #bcd9db; }
+
+.topnav-actions { display: flex; align-items: center; gap: 6px; }
+.icon-moon { display: none; }
+[data-theme="dark"] .icon-sun { display: none; }
+[data-theme="dark"] .icon-moon { display: block; }
+
+.profile-menu { position: relative; }
+.profile-btn {
+  display: flex; align-items: center; gap: 8px; border: none; background: transparent;
+  padding: 6px 10px 6px 6px; border-radius: 999px; transition: background 0.2s var(--ease);
+  color: var(--text); /* buttons don't inherit body's color by default, so set it explicitly to follow the active theme */
+}
+.profile-btn:hover { background: var(--surface-alt); }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--brand-500); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700;
+}
+.avatar-lg { width: 40px; height: 40px; font-size: 15px; }
+.profile-name { font-size: 13.5px; font-weight: 600; }
+.icon-chevron { width: 16px; height: 16px; color: var(--text-muted); }
+
+.profile-dropdown {
+  position: absolute; right: 0; top: calc(100% + 8px); width: 240px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg); padding: 8px;
+}
+.profile-dropdown-header { display: flex; gap: 10px; align-items: center; padding: 10px 8px 12px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+.profile-dropdown-name { font-size: 13.5px; font-weight: 700; }
+.profile-dropdown-role { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+.profile-dropdown-item {
+  width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
+  border: none; background: none; padding: 9px 8px; border-radius: var(--radius-sm);
+  font-size: 13.5px; color: var(--text); transition: background 0.2s var(--ease);
+}
+.profile-dropdown-item:hover { background: var(--surface-alt); color: var(--danger); }
+
+/* ============================= MAIN CONTENT ============================= */
+.main-content { flex: 1; max-width: 1280px; width: 100%; margin: 0 auto; padding: 44px 24px 64px; }
+.view-page-flush { max-width: none; padding: 0; }
+
+.section-heading { margin: 60px 0 22px; }
+.section-heading h2 { font-size: 21px; }
+.section-heading p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+.eyebrow {
+  display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--brand-500); margin-bottom: 12px;
+}
+
+/* ---- Hero ---- */
+.hero {
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 48px; overflow: hidden;
+}
+.hero-title { font-size: clamp(26px, 3.4vw, 36px); line-height: 1.15; }
+.hero-desc { margin-top: 16px; color: var(--text-muted); font-size: 15px; line-height: 1.65; max-width: 48ch; }
+.hero-actions { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+/* ---- Hero visual: five existing campus photos arranged in a single
+   structured bento grid — one large focal image plus a balanced 2x2 grid
+   of supporting images. Equal gutters throughout, consistent corner
+   radius, soft shadows only, no overlapping or scattered placement. ---- */
+.hero-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.hero-photo {
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  animation: heroFadeIn 0.6s var(--ease) both;
+  transition: box-shadow 0.3s var(--ease);
+}
+.hero-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.5s var(--ease);
+}
+.hero-photo:hover { box-shadow: var(--shadow-lg); }
+.hero-photo:hover img { transform: scale(1.04); }
+
+/* Large focal image occupies the left half, full height */
+.hero-photo-main {
+  grid-column: 1 / 3;
+  grid-row: 1 / 5;
+  box-shadow: var(--shadow-lg);
+  animation-delay: 0s;
+}
+.hero-photo-main img { object-position: center 34%; }
+
+/* Supporting images: balanced 2x2 grid on the right half */
+.hero-photo-1 {
+  grid-column: 3 / 4;
+  grid-row: 1 / 3;
+  animation-delay: 0.08s;
+}
+.hero-photo-1 img { object-position: center 20%; }
+
+.hero-photo-2 {
+  grid-column: 4 / 5;
+  grid-row: 1 / 3;
+  animation-delay: 0.14s;
+}
+.hero-photo-2 img { object-position: center 55%; }
+
+.hero-photo-3 {
+  grid-column: 3 / 4;
+  grid-row: 3 / 5;
+  animation-delay: 0.2s;
+}
+.hero-photo-3 img { object-position: center 65%; }
+
+.hero-photo-4 {
+  grid-column: 4 / 5;
+  grid-row: 3 / 5;
+  animation-delay: 0.26s;
+}
+.hero-photo-4 img { object-position: center 40%; }
+
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo { animation: none; opacity: 1; }
+  .hero-photo img { transition: none; }
+}
+
+/* ---- Stats ---- */
+.stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 22px 18px; text-align: left; transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.stat-card:hover { box-shadow: var(--shadow-sm); border-color: var(--brand-300); }
+.stat-icon {
+  width: 36px; height: 36px; border-radius: 8px; background: var(--brand-50); color: var(--brand-500);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+}
+.stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+.stat-label { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+/* ---- Feature cards ---- */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.feature-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 26px; transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.feature-card:hover { box-shadow: var(--shadow-sm); border-color: var(--brand-300); }
+.feature-card[hidden] { display: none; } /* explicit, so the flex display rule above can never re-show a role-hidden card */
+.feature-card-icon {
+  width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  color: #fff; margin-bottom: 10px;
+}
+.feature-icon-dashboard { background: var(--brand-500); }
+.feature-icon-map { background: var(--accent-600); }
+.feature-icon-admin { background: var(--gold-500); }
+.feature-card h3 { font-size: 16.5px; }
+.feature-card p { color: var(--text-muted); font-size: 13.5px; line-height: 1.55; }
+.feature-card-cta { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--brand-500); }
+.feature-card-cta .icon { width: 15px; height: 15px; transition: transform 0.2s var(--ease); }
+.feature-card:hover .feature-card-cta .icon { transform: translateX(3px); }
+
+/* ============================= PAGE HEADER (dashboard) ============================= */
+.page-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+.page-header h1 { font-size: 24px; }
+.page-desc { color: var(--text-muted); font-size: 14px; margin-top: 6px; max-width: 60ch; }
+.page-header-actions { display: flex; gap: 10px; }
+
+/* Dashboard page breaks out of the standard 1280px main-content column so
+   it can use almost the full browser width, while staying horizontally
+   centered and keeping comfortable side margins (not edge-to-edge). The
+   outer element spans the viewport; the inner element caps the usable
+   width and supplies the side margins. */
+.view-page-wide {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+}
+.dashboard-page-inner {
+  /* Caps at ~1760px (within the requested 1700–1800 range) while guaranteeing
+     a minimum ~48px margin on each side as the viewport grows beyond that,
+     without stacking an extra layer of padding on top of the auto-centering. */
+  width: min(1760px, calc(100% - 96px));
+  margin: 0 auto;
+}
+
+.dashboard-frame-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 88%;
+  margin: 0 auto;
+  height: 1056px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.dashboard-iframe { width: 100%; height: 100%; border: none; display: block; }
+.dashboard-loading, .map-loading {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: var(--surface); color: var(--text-muted); font-size: 13.5px; z-index: 2;
+  transition: opacity 0.3s var(--ease), visibility 0.3s var(--ease);
+}
+.dashboard-loading.hide, .map-loading.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.spinner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--brand-500); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dashboard-empty-state {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  text-align: center; padding: 40px; background: var(--surface); color: var(--text-muted);
+}
+.dashboard-empty-state .icon-xl { color: var(--brand-300); }
+.dashboard-empty-state h3 { color: var(--text); font-size: 16px; }
+.dashboard-empty-state code { background: var(--surface-alt); padding: 2px 7px; border-radius: 5px; font-size: 12.5px; }
+
+/* ============================= MAP LAYOUT (Map + Admin) ============================= */
+.map-layout {
+  display: grid; grid-template-columns: 300px 1fr 340px;
+  height: calc(100vh - var(--topnav-h));
+}
+.map-sidebar {
+  border-right: 1px solid var(--border); background: var(--surface);
+  padding: 22px 18px; overflow-y: auto; transition: margin-left 0.25s var(--ease);
+}
+.map-sidebar.collapsed { margin-left: -300px; }
+.map-sidebar-section { margin-bottom: 26px; }
+.map-sidebar-title { font-size: 17px; }
+.map-sidebar-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.map-sidebar-subtitle { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 10px; }
+.widget-container { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); min-height: 46px; }
+.esri-search-container { width: 100%; }
+
+.admin-note {
+  display: flex; gap: 10px; background: #fdf6e8; border: 1px solid #f0dfa8; border-radius: var(--radius-sm);
+  padding: 12px; font-size: 12px; color: #7a5a10; line-height: 1.5;
+}
+.admin-note .icon { color: #b8791a; width: 18px; height: 18px; flex-shrink: 0; }
+[data-theme="dark"] .admin-note { background: #2c260f; border-color: #4a3d15; color: #e0c37a; }
+
+.map-container-wrap { position: relative; }
+.map-view { width: 100%; height: 100%; background: var(--surface-alt); }
+.map-sidebar-collapse {
+  position: absolute; top: 16px; left: 16px; z-index: 10;
+  width: 36px; height: 36px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; justify-content: center; transition: transform 0.2s var(--ease);
+}
+.map-sidebar-collapse.collapsed .icon { transform: rotate(180deg); }
+
+/* Info panel (map + admin) */
+.info-panel {
+  border-left: 1px solid var(--border); background: var(--surface);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.info-panel-header { padding: 20px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.info-panel-header h2 { font-size: 16.5px; }
+.info-panel-body { padding: 22px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px; width: fit-content;
+  background: var(--accent-100); color: var(--accent-600); font-size: 12px; font-weight: 700;
+  padding: 5px 12px; border-radius: 999px;
+}
+.status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-badge.status-warning { background: #fdf1de; color: var(--warning); }
+.status-badge.status-danger { background: #fbe4e1; color: var(--danger); }
+
+.info-list { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.info-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 14px; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-row:nth-child(even) { background: var(--surface-alt); }
+.info-row dt { color: var(--text-muted); }
+.info-row dd { margin: 0; font-weight: 600; text-align: right; }
+
+.info-desc h3 { font-size: 13px; margin-bottom: 8px; }
+.info-desc p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 40px 10px; color: var(--text-muted); }
+.empty-state .icon-xl { color: var(--brand-300); }
+.empty-state h3 { font-size: 14.5px; color: var(--text); }
+.empty-state p { font-size: 13px; }
+
+/* Admin edit form — tighter padding/gaps than the shared .info-panel-body so
+   the whole (now longer, all-vertical) form fits with minimal scrolling.
+   Scoped to #admin-edit-form only, so the public map's read-only info panel
+   keeps its original, more spacious layout. */
+#admin-edit-form {
+  padding: 16px 20px 20px;
+  gap: 12px;
+}
+#admin-edit-form .field { gap: 4px; }
+#admin-edit-form input, #admin-edit-form select, #admin-edit-form textarea { padding: 9px 11px; }
+#admin-edit-form .form-actions { margin-top: 2px; }
+
+/* Admin edit form layout */
+.map-sidebar-admin {
+  padding-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-height: 100%;
+}
+/* Flex `gap` above already provides even spacing between sections, so the
+   sidebar no longer relies on each section's own margin (which used to
+   leave uneven space when the sidebar only had 1-2 short blocks in it). */
+.map-sidebar-admin > .map-sidebar-section { margin-bottom: 0; }
+/* Pins the "edits are live" note to the bottom of the sidebar so short
+   content (e.g. the empty placeholder) doesn't leave a big empty gap
+   above it — the sidebar always feels intentionally filled. */
+.map-sidebar-admin > .admin-note { margin-top: auto; }
+
+
+/* ============================= BUILDING DETAILS (admin left panel) ============================= */
+.building-details[hidden] { display: none; } /* explicit, so no author rule below can ever re-show it */
+
+.detail-cards { display: flex; flex-direction: column; gap: 10px; }
+.detail-card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.detail-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 12px 14px;
+  transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+.detail-card:hover { border-color: var(--brand-300); }
+.detail-card-compact { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+
+.detail-icon {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  background: var(--brand-100); color: var(--brand-600);
+}
+.detail-icon .icon { width: 18px; height: 18px; }
+[data-theme="dark"] .detail-icon { background: var(--brand-700); color: var(--brand-100); }
+
+.detail-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.detail-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.detail-value { font-size: 14.5px; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.form-actions { display: flex; gap: 10px; margin-top: 6px; }
+.form-actions .btn { flex: 1; }
+
+/* ============================= MODAL ============================= */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500; background: rgba(15, 20, 22, 0.5);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal {
+  width: 100%; max-width: 420px; background: var(--surface); border-radius: var(--radius-md);
+  padding: 26px; box-shadow: var(--shadow-lg);
+}
+.modal h2 { font-size: 17px; margin-bottom: 10px; }
+.modal p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+.modal .form-actions { margin-top: 22px; }
+
+/* ============================= FOOTER ============================= */
+.app-footer { border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; }
+.app-footer-inner {
+  max-width: 1280px; margin: 0 auto; padding: 26px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.app-footer-brand { display: flex; align-items: center; gap: 14px; }
+.app-footer-logo { height: 20px; }
+[data-theme="dark"] .app-footer-logo { filter: brightness(0) invert(1); }
+.app-footer-brand p { font-size: 12.5px; color: var(--text-muted); }
+.app-footer-links { display: flex; gap: 18px; }
+.app-footer-links a { font-size: 13px; color: var(--text-muted); }
+.app-footer-links a:hover { color: var(--brand-500); }
+.app-footer-copy { font-size: 12px; color: var(--text-muted); }
+
+/* ============================= ArcGIS widget theming ============================= */
+.esri-widget, .esri-component { font-family: var(--font-body) !important; }
+[data-theme="dark"] .esri-widget { --calcite-ui-foreground-1: #182226; }
+
+/* ============================= RESPONSIVE ============================= */
+@media (max-width: 1180px) {
+  .map-layout { grid-template-columns: 260px 1fr 300px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .dashboard-page-inner { width: 100%; padding: 0 32px; }
+  .dashboard-frame-wrap { max-width: 100%; height: 1000px; }
+}
+
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; padding: 32px; }
+  .hero-graphic { order: -1; }
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+  .map-layout { grid-template-columns: 1fr; }
+  .map-sidebar, .info-panel { position: fixed; top: var(--topnav-h); bottom: 0; width: 300px; z-index: 50; box-shadow: var(--shadow-lg); }
+  .map-sidebar { left: 0; transform: translateX(-100%); transition: transform 0.25s var(--ease); }
+  .map-sidebar.mobile-open { transform: translateX(0); }
+  .info-panel { right: 0; width: 320px; }
+  .dashboard-page-inner { width: 100%; padding: 0 24px; }
+  .dashboard-frame-wrap { max-width: 100%; height: 900px; }
+}
+
+@media (max-width: 720px) {
+  .nav-toggle { display: inline-flex; }
+  .topnav-links {
+    position: fixed; top: var(--topnav-h); left: 0; right: 0; bottom: 0;
+    background: var(--surface); flex-direction: column; align-items: stretch; gap: 4px; padding: 16px;
+    transform: translateX(-100%); transition: transform 0.25s var(--ease); z-index: 150;
+  }
+  .topnav-links.open { transform: translateX(0); }
+  .topnav-link { padding: 13px 16px; }
+  .topnav-title { display: none; }
+  .profile-name { display: none; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid { grid-template-columns: 1fr; }
+  .main-content { padding: 24px 16px 40px; }
+  .hero { padding: 24px; border-radius: var(--radius-md); }
+  .hero-visual { aspect-ratio: 1 / 1; gap: 10px; }
+  .info-panel { width: 90vw; }
+  .dashboard-page-inner { width: 100%; padding: 0 16px; }
+  .dashboard-frame-wrap { max-width: 100%; height: 760px; }
+}
+
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+.dashboard-empty-state[hidden] {
+  display: none !important;
+}

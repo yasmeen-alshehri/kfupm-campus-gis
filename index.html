@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KFUPM Campus GIS Portal</title>
+  <meta name="description" content="King Fahd University of Petroleum &amp; Minerals — Campus GIS Portal" />
+
+  <!-- ArcGIS Maps SDK for JavaScript -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.29/"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ============================================================ -->
+  <!-- LOADING SCREEN                                                -->
+  <!-- ============================================================ -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-inner">
+      <img src="assets/kfupm-logo.svg" alt="KFUPM" class="loading-logo" />
+      <div class="loading-bar"><span></span></div>
+      <p class="loading-text">Preparing Campus GIS Portal…</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TOAST CONTAINER (global)                                      -->
+  <!-- ============================================================ -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ============================================================ -->
+  <!-- LOGIN VIEW                                                    -->
+  <!-- ============================================================ -->
+  <section id="view-login" class="view view-login">
+    <div class="login-backdrop" aria-hidden="true">
+      <div class="login-backdrop-grid"></div>
+    </div>
+
+    <div class="login-card">
+      <div class="login-card-header">
+        <img src="assets/kfupm-logo.svg" alt="KFUPM logo" class="login-logo" />
+        <h1 class="login-title">Campus GIS Portal</h1>
+        <p class="login-subtitle">King Fahd University of Petroleum &amp; Minerals</p>
+      </div>
+
+      <div class="role-toggle" role="tablist" aria-label="Select account role">
+        <button type="button" class="role-toggle-btn active" data-role="user" role="tab" aria-selected="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
+          </svg>
+          User
+        </button>
+        <button type="button" class="role-toggle-btn" data-role="admin" role="tab" aria-selected="false">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path
+              d="M12 2 4 5v6c0 5.2 3.4 9.9 8 11 4.6-1.1 8-5.8 8-11V5l-8-3Zm-1.2 13.4L7.6 12.2l1.4-1.4 1.8 1.8 4.2-4.2 1.4 1.4-5.6 5.6Z" />
+          </svg>
+          Admin
+        </button>
+        <span class="role-toggle-indicator"></span>
+      </div>
+
+      <form id="login-form" class="login-form" novalidate>
+        <label class="field">
+          <span class="field-label">Username</span>
+          <input type="text" id="login-username" autocomplete="username" placeholder="e.g. user" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Password</span>
+          <div class="password-wrap">
+            <input type="password" id="login-password" autocomplete="current-password" placeholder="••••••••"
+              required />
+            <button type="button" class="password-toggle" id="password-toggle" aria-label="Show password">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path
+                  d="M12 5c-5.5 0-9.6 3.7-11 7 1.4 3.3 5.5 7 11 7s9.6-3.7 11-7c-1.4-3.3-5.5-7-11-7Zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9Zm0-7.2a2.7 2.7 0 1 0 0 5.4 2.7 2.7 0 0 0 0-5.4Z" />
+              </svg>
+            </button>
+          </div>
+        </label>
+
+        <p id="login-error" class="login-error" hidden></p>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          <span>Sign In</span>
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5Z" />
+          </svg>
+        </button>
+
+        <div class="login-hint">
+          <strong>Demo credentials</strong>
+          <div class="login-hint-row"><span>User</span><code>user / user123</code></div>
+          <div class="login-hint-row"><span>Admin</span><code>admin / admin123</code></div>
+        </div>
+      </form>
+    </div>
+
+    <p class="login-footnote">© <span id="year-login"></span> King Fahd University of Petroleum &amp; Minerals ·
+      Dhahran, Saudi Arabia</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- APP SHELL (visible after login)                               -->
+  <!-- ============================================================ -->
+  <div id="app-shell" class="app-shell" hidden>
+
+    <!-- ---------------- TOP NAVIGATION ---------------- -->
+    <header class="topnav">
+      <div class="topnav-inner">
+        <div class="topnav-brand">
+          <button id="mobile-nav-toggle" class="icon-btn nav-toggle" aria-label="Toggle navigation">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z" />
+            </svg>
+          </button>
+          <img src="assets/kfupm-logo.svg" alt="KFUPM" class="topnav-logo" />
+          <span class="topnav-divider" aria-hidden="true"></span>
+          <span class="topnav-title">Campus GIS Portal</span>
+        </div>
+
+        <nav class="topnav-links" id="topnav-links" aria-label="Primary">
+          <a href="#home" class="topnav-link active" data-view="home">Home</a>
+          <a href="#dashboard" class="topnav-link" data-view="dashboard">Dashboard</a>
+          <a href="#map" class="topnav-link" data-view="map">Campus Map</a>
+          <a href="#admin" class="topnav-link admin-only" data-view="admin" hidden>Admin</a>
+        </nav>
+
+        <div class="topnav-actions">
+          <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode" title="Toggle dark / light mode">
+            <svg class="icon icon-sun" viewBox="0 0 24 24">
+              <path
+                d="M12 4.5a1 1 0 0 1-1-1V2a1 1 0 1 1 2 0v1.5a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1V22a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1ZM4.5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.5a1 1 0 0 1 1 1Zm18 0a1 1 0 0 1-1 1h-1.5a1 1 0 1 1 0-2H21a1 1 0 0 1 1 1ZM6.3 7.7 5.2 6.6a1 1 0 0 1 1.4-1.4l1.1 1.1a1 1 0 1 1-1.4 1.4Zm11.2 11.2-1.1-1.1a1 1 0 0 1 1.4-1.4l1.1 1.1a1 1 0 0 1-1.4 1.4ZM6.3 16.3a1 1 0 0 1 1.4 1.4l-1.1 1.1a1 1 0 0 1-1.4-1.4l1.1-1.1ZM17.5 6.6a1 1 0 0 1 1.4 1.4l-1.1 1.1a1 1 0 1 1-1.4-1.4l1.1-1.1ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />
+            </svg>
+            <svg class="icon icon-moon" viewBox="0 0 24 24">
+              <path d="M20.7 14.9A8.8 8.8 0 0 1 9.1 3.3a1 1 0 0 0-1.2-1.3A10.8 10.8 0 1 0 22 16.1a1 1 0 0 0-1.3-1.2Z" />
+            </svg>
+          </button>
+
+          <div class="profile-menu">
+            <button id="profile-btn" class="profile-btn" aria-haspopup="true" aria-expanded="false">
+              <span class="avatar" id="avatar-initials">U</span>
+              <span class="profile-name" id="profile-name">User</span>
+              <svg class="icon icon-chevron" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5H7Z" />
+              </svg>
+            </button>
+            <div class="profile-dropdown" id="profile-dropdown" hidden>
+              <div class="profile-dropdown-header">
+                <span class="avatar avatar-lg" id="avatar-initials-lg">U</span>
+                <div>
+                  <p class="profile-dropdown-name" id="profile-dropdown-name">User</p>
+                  <p class="profile-dropdown-role" id="profile-dropdown-role">Standard Account</p>
+                </div>
+              </div>
+              <button type="button" class="profile-dropdown-item" id="logout-btn">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M10 17v-2H4V9h6V7l5 5-5 5Zm-1 3h9a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2h2V6h9v12H9v-2H7v2a2 2 0 0 0 2 2Z" />
+                </svg>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ---------------- MAIN CONTENT AREA ---------------- -->
+    <main class="main-content">
+
+      <!-- ============== HOME VIEW ============== -->
+      <section id="view-home" class="view-page">
+        <div class="hero">
+          <div class="hero-text">
+            <span class="eyebrow">KFUPM Facilities &amp; Campus Operations</span>
+            <h1 class="hero-title">KFUPM Campus GIS Portal</h1>
+            <p class="hero-desc">
+              Interactive GIS platform for exploring campus buildings, facilities,
+              transportation routes, and spatial analytics powered by ArcGIS Online.
+            </p>
+            <div class="hero-actions">
+              <a href="#map" class="btn btn-primary" data-view-link="map">
+                Explore Campus Map
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5Z" />
+                </svg>
+              </a>
+              <a href="#dashboard" class="btn btn-outline" data-view-link="dashboard">View Dashboard</a>
+            </div>
+          </div>
+          <div class="hero-graphic" aria-hidden="true">
+            <div class="hero-visual">
+
+              <!-- Main campus photograph: large focal image -->
+              <figure class="hero-photo hero-photo-main">
+                <img src="assets/kfupm-campus-04.jpg" alt="" loading="lazy" />
+              </figure>
+
+              <!-- Supporting photographs: balanced 2x2 grid alongside the main image -->
+              <figure class="hero-photo hero-photo-1">
+                <img src="assets/kfupm-campus-01.jpg" alt="" loading="lazy" />
+              </figure>
+              <figure class="hero-photo hero-photo-2">
+                <img src="assets/kfupm-campus-02.jpg" alt="" loading="lazy" />
+              </figure>
+              <figure class="hero-photo hero-photo-3">
+                <img src="assets/kfupm-campus-03.jpg" alt="" loading="lazy" />
+              </figure>
+              <figure class="hero-photo hero-photo-4">
+                <img src="assets/kfupm-campus-05.jpg" alt="" loading="lazy" />
+              </figure>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Campus Overview -->
+        <div class="section-heading">
+          <h2>Campus Overview</h2>
+          <p>Facts &amp; figures on core spatial assets across the university campus, updated live from ArcGIS.</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon" viewBox="0 0 24 24">
+                <path d="M4 21V7l8-4 8 4v14h-6v-6h-4v6H4Z" />
+              </svg></div>
+            <p class="stat-value" data-stat="buildings" data-count="0">0</p>
+            <p class="stat-label">Buildings</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon" viewBox="0 0 24 24">
+                <path d="M4 4h16v16H4V4Zm2 2v12h12V6H6Zm2 2h8v2H8V8Zm0 4h8v2H8v-2Z" />
+              </svg></div>
+            <p class="stat-value" data-stat="classrooms" data-count="0">0</p>
+            <p class="stat-label">Classrooms</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon" viewBox="0 0 24 24">
+                <path
+                  d="M9 2v6.3L4.2 18a2 2 0 0 0 1.8 2.9h12a2 2 0 0 0 1.8-2.9L15 8.3V2H9Zm2 2h2v4.7l.3.6L17.5 19h-11l4.2-9.7.3-.6V4Z" />
+              </svg></div>
+            <p class="stat-value" data-stat="labs" data-count="0">0</p>
+            <p class="stat-label">Laboratories</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon" viewBox="0 0 24 24">
+                <path
+                  d="M4 16c0 .9.4 1.6 1 2v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1c.6-.4 1-1.1 1-2V6a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v10Zm3.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM6 10V6h12v4H6Z" />
+              </svg></div>
+            <p class="stat-value" data-stat="busStops" data-count="0">0</p>
+            <p class="stat-label">Bus Stops</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon" viewBox="0 0 24 24">
+                <path
+                  d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3 6.8 3.8L12 12l-6.8-3.9L12 4.3ZM5 9.6l6 3.4v6.7l-6-3.3V9.6Zm8 10.1v-6.7l6-3.4v6.8l-6 3.3Z" />
+              </svg></div>
+            <p class="stat-value" data-stat="busRoutes" data-count="0">0</p>
+            <p class="stat-label">Bus Routes</p>
+          </div>
+        </div>
+
+        <!-- Navigation cards -->
+        <div class="section-heading">
+          <h2>Portal Modules</h2>
+          <p>Direct access to the GIS tools available in this portal.</p>
+        </div>
+        <div class="cards-grid">
+          <a href="#dashboard" class="feature-card" data-view-link="dashboard">
+            <div class="feature-card-icon feature-icon-dashboard">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" />
+              </svg>
+            </div>
+            <h3>Campus Dashboard</h3>
+            <p>Operational analytics and live KPIs powered by ArcGIS Dashboards.</p>
+            <span class="feature-card-cta">Open Dashboard <svg class="icon" viewBox="0 0 24 24">
+                <path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5Z" />
+              </svg></span>
+          </a>
+          <a href="#map" class="feature-card" data-view-link="map">
+            <div class="feature-card-icon feature-icon-map">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+              </svg>
+            </div>
+            <h3>Campus Map</h3>
+            <p>Interactive GIS map of buildings, facilities, and infrastructure.</p>
+            <span class="feature-card-cta">Open Map <svg class="icon" viewBox="0 0 24 24">
+                <path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5Z" />
+              </svg></span>
+          </a>
+          <a href="#admin" class="feature-card admin-only" data-view-link="admin" hidden>
+            <div class="feature-card-icon feature-icon-admin">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path
+                  d="M12 2 4 5v6c0 5.2 3.4 9.9 8 11 4.6-1.1 8-5.8 8-11V5l-8-3Zm0 4.5A2.5 2.5 0 1 1 12 11a2.5 2.5 0 0 1 0-4.5Zm0 6.5c2 0 4 1 4 2.3V16H8v-.7c0-1.3 2-2.3 4-2.3Z" />
+              </svg>
+            </div>
+            <h3>Admin Panel</h3>
+            <p>Manage and update building attributes in the campus feature layer.</p>
+            <span class="feature-card-cta">Open Admin <svg class="icon" viewBox="0 0 24 24">
+                <path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5Z" />
+              </svg></span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============== DASHBOARD VIEW ============== -->
+      <section id="view-dashboard" class="view-page view-page-wide" hidden>
+        <div class="dashboard-page-inner">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">Analytics</span>
+              <h1>Campus Dashboard</h1>
+              <p class="page-desc">Real-time operational metrics for campus facilities, built with ArcGIS Dashboards.
+              </p>
+            </div>
+            <div class="page-header-actions">
+              <button id="dashboard-refresh" class="btn btn-ghost btn-sm">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z" />
+                </svg>
+                Refresh
+              </button>
+              <button id="dashboard-fullscreen" class="btn btn-ghost btn-sm">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path d="M4 4h6v2H6v4H4V4Zm10 0h6v6h-2V6h-4V4ZM4 14h2v4h4v2H4v-6Zm14 4v-4h2v6h-6v-2h4Z" />
+                </svg>
+                Fullscreen
+              </button>
+            </div>
+          </div>
+
+          <div class="dashboard-frame-wrap" id="dashboard-frame-wrap">
+            <div class="dashboard-loading" id="dashboard-loading">
+              <div class="spinner"></div>
+              <p>Loading dashboard…</p>
+            </div>
+            <!-- DASHBOARD_URL placeholder: replace src below with the published ArcGIS Dashboard URL -->
+            <iframe id="dashboard-iframe" class="dashboard-iframe" src="https://www.arcgis.com"
+              title="KFUPM Campus Dashboard" loading="lazy" allowfullscreen>
+            </iframe>
+            <div class="dashboard-empty-state" id="dashboard-empty-state" hidden>
+              <svg class="icon icon-xl" viewBox="0 0 24 24">
+                <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" />
+              </svg>
+              <h3>Dashboard not configured</h3>
+              <p>Replace <code>DASHBOARD_URL</code> in <code>index.html</code> with a published ArcGIS Dashboard link.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== CAMPUS MAP VIEW ============== -->
+      <section id="view-map" class="view-page view-page-flush" hidden>
+        <div class="map-layout">
+
+          <!-- Left sidebar -->
+          <aside class="map-sidebar" id="map-sidebar">
+            <div class="map-sidebar-section">
+              <h2 class="map-sidebar-title">Campus Map</h2>
+              <p class="map-sidebar-desc">Read-only exploration of campus buildings and facilities.</p>
+            </div>
+
+            <div class="map-sidebar-section">
+              <label class="field">
+                <span class="field-label">Search</span>
+                <div id="map-search" class="esri-search-container"></div>
+              </label>
+            </div>
+
+            <div class="map-sidebar-section">
+              <h3 class="map-sidebar-subtitle">Basemap</h3>
+              <div id="map-basemap-gallery" class="widget-container"></div>
+            </div>
+
+            <div class="map-sidebar-section">
+              <h3 class="map-sidebar-subtitle">Layers</h3>
+              <div id="map-layer-list" class="widget-container"></div>
+            </div>
+
+            <div class="map-sidebar-section">
+              <h3 class="map-sidebar-subtitle">Legend</h3>
+              <div id="map-legend" class="widget-container"></div>
+            </div>
+          </aside>
+
+          <!-- Map container -->
+          <div class="map-container-wrap">
+            <button class="map-sidebar-collapse" id="map-sidebar-collapse" aria-label="Toggle sidebar">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6" />
+              </svg>
+            </button>
+            <div id="campus-map" class="map-view"></div>
+            <div class="map-loading" id="map-loading">
+              <div class="spinner"></div>
+              <p>Loading campus map…</p>
+            </div>
+          </div>
+
+          <!-- Building info panel -->
+          <aside class="info-panel" id="building-info-panel" hidden>
+            <div class="info-panel-header">
+              <h2 id="info-panel-title">Building Name</h2>
+              <button class="icon-btn" id="info-panel-close" aria-label="Close panel">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path
+                    d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6 6.4 5Z" />
+                </svg>
+              </button>
+            </div>
+            <div class="info-panel-body" id="info-panel-body">
+              <dl class="info-list">
+                <div class="info-row">
+                  <dt>Building Type</dt>
+                  <dd id="info-type">—</dd>
+                </div>
+                <div class="info-row">
+                  <dt>Floors</dt>
+                  <dd id="info-floors">—</dd>
+                </div>
+                <div class="info-row">
+                  <dt>Classrooms</dt>
+                  <dd id="info-classrooms">—</dd>
+                </div>
+                <div class="info-row">
+                  <dt>Labs</dt>
+                  <dd id="info-labs">—</dd>
+                </div>
+                <div class="info-row">
+                  <dt>Courses</dt>
+                  <dd id="info-courses">—</dd>
+                </div>
+                <div class="info-row">
+                  <dt>Sections</dt>
+                  <dd id="info-sections">—</dd>
+                </div>
+              </dl>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============== ADMIN PANEL VIEW ============== -->
+      <section id="view-admin" class="view-page view-page-flush" hidden>
+        <div class="map-layout">
+
+          <div class="map-sidebar map-sidebar-admin">
+            <div class="map-sidebar-section">
+              <h2 class="map-sidebar-title">Building Details</h2>
+              <p class="map-sidebar-desc">Click a building on the map to inspect its attributes from the Buildings
+                feature layer.</p>
+            </div>
+
+            <!-- Shown until a building is selected -->
+            <div class="building-details" id="details-empty-state">
+              <div class="empty-state">
+                <svg class="icon icon-xl" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+                </svg>
+                <h3>No building selected</h3>
+                <p>Click any building on the map to view its details here.</p>
+              </div>
+            </div>
+
+            <!-- Populated once a building is selected -->
+            <div class="building-details" id="details-content" hidden>
+              <div class="detail-cards">
+                <div class="detail-card">
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path
+                        d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6h4a2 2 0 0 1 2 2v8h-6v-4h-4v4H4Zm2-2h2v-2H6v2Zm0-4h2v-2H6v2Zm0-4h2V9H6v2Zm4 8h2v-2h-2v2Zm0-4h2v-2h-2v2Zm0-4h2V9h-2v2Zm6 8h2v-2h-2v2Zm0-4h2v-2h-2v2Z" />
+                    </svg>
+                  </span>
+                  <div class="detail-text">
+                    <span class="detail-label">Building Name</span>
+                    <span class="detail-value" id="detail-name">—</span>
+                  </div>
+                </div>
+
+                <div class="detail-card">
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M3 5h18v2H3V5Zm0 6h18v2H3v-2Zm0 6h18v2H3v-2Z" />
+                    </svg>
+                  </span>
+                  <div class="detail-text">
+                    <span class="detail-label">Building ID</span>
+                    <span class="detail-value" id="detail-id">—</span>
+                  </div>
+                </div>
+
+                <div class="detail-card">
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M12 2 2 8v2h20V8L12 2Zm-8 9v9h4v-6h3v6h2v-6h3v6h4v-9H4Z" />
+                    </svg>
+                  </span>
+                  <div class="detail-text">
+                    <span class="detail-label">Building Type</span>
+                    <span class="detail-value" id="detail-type">—</span>
+                  </div>
+                </div>
+
+                <div class="detail-card">
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path d="M3 21V3h2v16h16v2H3Zm4-4V9h2v8H7Zm4 0V5h2v12h-2Zm4 0v-6h2v6h-2Z" />
+                    </svg>
+                  </span>
+                  <div class="detail-text">
+                    <span class="detail-label">Number of Floors</span>
+                    <span class="detail-value" id="detail-floors">—</span>
+                  </div>
+                </div>
+
+                <div class="detail-card-row">
+                  <div class="detail-card detail-card-compact">
+                    <span class="detail-icon" aria-hidden="true">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M4 4h16v12H4V4Zm0 16h16v2H4v-2ZM6 6v8h12V6H6Z" />
+                      </svg>
+                    </span>
+                    <div class="detail-text">
+                      <span class="detail-label">Classrooms</span>
+                      <span class="detail-value" id="detail-classrooms">—</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-card detail-card-compact">
+                    <span class="detail-icon" aria-hidden="true">
+                      <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                          d="M9 2v2H7v4.5L2.8 17a2 2 0 0 0 1.8 3h14.8a2 2 0 0 0 1.8-3L17 8.5V4h-2V2H9Zm0 6.9V4h6v4.9l1 1.9H8l1-1.1Z" />
+                      </svg>
+                    </span>
+                    <div class="detail-text">
+                      <span class="detail-label">Labs</span>
+                      <span class="detail-value" id="detail-labs">—</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="detail-card">
+                  <span class="detail-icon" aria-hidden="true">
+                    <svg class="icon" viewBox="0 0 24 24">
+                      <path
+                        d="M4 19.5V6a2 2 0 0 1 2-2h8.5L20 8.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm2-1.5h12V9.4L13.6 4H6v14Z" />
+                    </svg>
+                  </span>
+                  <div class="detail-text">
+                    <span class="detail-label">Sections</span>
+                    <span class="detail-value" id="detail-sections">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="map-sidebar-section admin-note">
+              <svg class="icon" viewBox="0 0 24 24">
+                <path d="M12 2 1 21h22L12 2Zm0 5.5 6.9 12H5.1L12 7.5ZM11 10v4h2v-4h-2Zm0 5.5v2h2v-2h-2Z" />
+              </svg>
+              <p>Edits are written directly to the ArcGIS Feature Layer. Review changes carefully before saving.</p>
+            </div>
+          </div>
+
+          <div class="map-container-wrap">
+            <div id="admin-map" class="map-view"></div>
+            <div class="map-loading" id="admin-map-loading">
+              <div class="spinner"></div>
+              <p>Loading admin map…</p>
+            </div>
+          </div>
+
+          <!-- Edit form panel -->
+          <aside class="info-panel" id="admin-edit-panel">
+            <div class="info-panel-header">
+              <h2 id="admin-panel-title">Edit Building</h2>
+            </div>
+
+            <form class="info-panel-body" id="admin-edit-form">
+              <div class="field">
+                <span class="field-label">Building ID</span>
+                <input type="text" id="admin-field-id" readonly class="field-readonly" />
+              </div>
+              <label class="field">
+                <span class="field-label">Building Name</span>
+                <input type="text" id="admin-field-name" required />
+              </label>
+              <label class="field">
+                <span class="field-label">Building Type</span>
+                <!-- Options are populated at runtime from the Building_Type
+                     field's coded value domain — see populateBuildingTypeOptions()
+                     in app.js. Do not hardcode <option> elements here. -->
+                <select id="admin-field-type"></select>
+              </label>
+              <label class="field">
+                <span class="field-label">Number of Floors</span>
+                <input type="text" id="admin-field-floors" inputmode="numeric" pattern="[0-9]*" />
+              </label>
+              <div class="field">
+                <span class="field-label">Classrooms</span>
+                <input type="text" id="admin-field-classrooms" readonly class="field-readonly" />
+              </div>
+              <div class="field">
+                <span class="field-label">Labs</span>
+                <input type="text" id="admin-field-labs" readonly class="field-readonly" />
+              </div>
+              <div class="field">
+                <span class="field-label">Courses</span>
+                <input type="text" id="admin-field-courses" readonly class="field-readonly" />
+              </div>
+              <div class="field">
+                <span class="field-label">Sections</span>
+                <input type="text" id="admin-field-sections" readonly class="field-readonly" />
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-ghost" id="admin-cancel-btn">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="admin-save-btn">Save Changes</button>
+              </div>
+            </form>
+          </aside>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ---------------- FOOTER ---------------- -->
+    <footer class="app-footer">
+      <div class="app-footer-inner">
+        <div class="app-footer-brand">
+          <img src="assets/kfupm-logo.svg" alt="KFUPM" class="app-footer-logo" />
+          <p>Campus GIS Portal — an internal facilities &amp; spatial data system.</p>
+        </div>
+        <div class="app-footer-links">
+          <a href="#home" data-view-link="home">Home</a>
+          <a href="#dashboard" data-view-link="dashboard">Dashboard</a>
+          <a href="#map" data-view-link="map">Campus Map</a>
+        </div>
+        <p class="app-footer-copy">© <span id="year-footer"></span> King Fahd University of Petroleum &amp; Minerals.
+          All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SAVE CONFIRMATION MODAL                                       -->
+  <!-- ============================================================ -->
+  <div id="confirm-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <h2 id="confirm-modal-title">Confirm Changes</h2>
+      <p id="confirm-modal-body">You are about to update this building's attributes in the live feature layer. This
+        action cannot be undone. Continue?</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="confirm-modal-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirm-modal-accept">Yes, Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
